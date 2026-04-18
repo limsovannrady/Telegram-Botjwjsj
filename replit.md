@@ -48,15 +48,22 @@ This project has two parts:
 ## Mini App Pages
 - **ទំព័រដើម (Home)** — Greeting with Telegram user avatar, daily Khmer proverb, quick action buttons
 - **ព័ត៌មាន (Info)** — Info cards in Khmer
-- **ការកំណត់ (Settings)** — Toggles for notifications, theme, language (persisted in localStorage)
+- **ការកំណត់ (Settings)** — Toggles for notifications, theme (saved per-user in PostgreSQL by Telegram ID)
 - **យើង (About)** — App info and contact section
+
+## User Settings System
+- Each user's settings are stored in PostgreSQL keyed by their **Telegram ID**
+- Table: `user_settings` (telegram_id, first_name, last_name, username, notifications, dark_mode, created_at, updated_at)
+- Express API server handles GET/POST `/api/users/:telegramId/settings`
+- Vite dev server proxies `/api` requests to the Express server on port 4001
 
 ## Development (Replit)
 
 | Workflow | Command |
 |---|---|
 | Telegram Bot | `python bot.py` (polling) |
-| Mini App | `vite dev` on port 23894 |
+| Mini App (Vite) | `vite dev` on port 23894 |
+| Khmer Mini App API | `tsx server.ts` on port 4001 |
 
 ## Vercel Deployment
 

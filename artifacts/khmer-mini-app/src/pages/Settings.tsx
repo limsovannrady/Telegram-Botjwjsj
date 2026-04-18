@@ -1,36 +1,32 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Bell, Moon, Languages, Shield } from "lucide-react";
+import { Bell, Moon, Languages, Shield, User } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useUserSettings } from "@/hooks/use-user-settings";
+import { useTelegram } from "@/hooks/use-telegram";
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
-  const [notifications, setNotifications] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
+  const { user } = useTelegram();
+  const { settings, loading, saving, updateSettings } = useUserSettings();
 
   useEffect(() => {
-    // Sync initial state
-    setDarkMode(theme === "dark");
-    
-    // Check localStorage
-    const savedNotifs = localStorage.getItem("khmer_app_notifications");
-    if (savedNotifs !== null) {
-      setNotifications(savedNotifs === "true");
+    if (!loading) {
+      setTheme(settings.dark_mode ? "dark" : "light");
     }
-  }, [theme]);
+  }, [loading, settings.dark_mode]);
 
   const handleNotifToggle = (checked: boolean) => {
-    setNotifications(checked);
-    localStorage.setItem("khmer_app_notifications", checked.toString());
+    updateSettings({ notifications: checked });
   };
 
   const handleThemeToggle = (checked: boolean) => {
-    setDarkMode(checked);
     setTheme(checked ? "dark" : "light");
+    updateSettings({ dark_mode: checked });
   };
 
   return (
@@ -44,6 +40,39 @@ export default function SettingsPage() {
         <h1 className="text-2xl font-bold font-serif mb-1">ការកំណត់</h1>
         <p className="text-sm text-muted-foreground">គ្រប់គ្រងគណនី និងកម្មវិធីរបស់អ្នក</p>
       </div>
+
+      {user && (
+        <Card className="border-border overflow-hidden">
+          <div className="p-4 bg-muted/30 border-b border-border">
+            <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">គណនីរបស់អ្នក</h2>
+          </div>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                {user.photo_url ? (
+                  <img src={user.photo_url} className="w-10 h-10 rounded-full object-cover" alt="avatar" />
+                ) : (
+                  <User className="w-5 h-5 text-primary" />
+                )}
+              </div>
+              <div>
+                <p className="font-semibold text-sm">
+                  {user.first_name} {user.last_name ?? ""}
+                </p>
+                {user.username && (
+                  <p className="text-xs text-muted-foreground">@{user.username}</p>
+                )}
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Telegram ID: <span className="font-mono">{user.id}</span>
+                </p>
+              </div>
+              {saving && (
+                <span className="ml-auto text-xs text-muted-foreground animate-pulse">រក្សាទុក...</span>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card className="border-border overflow-hidden">
         <div className="p-4 bg-muted/30 border-b border-border">
@@ -60,15 +89,16 @@ export default function SettingsPage() {
                 <p className="text-xs text-muted-foreground">ទទួលសារសំខាន់ៗ</p>
               </div>
             </div>
-            <Switch 
-              id="notifications" 
-              checked={notifications} 
-              onCheckedChange={handleNotifToggle} 
+            <Switch
+              id="notifications"
+              checked={settings.notifications}
+              onCheckedChange={handleNotifToggle}
+              disabled={loading}
             />
           </div>
-          
+
           <Separator className="ml-14" />
-          
+
           <div className="flex items-center justify-between p-4">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
@@ -79,15 +109,16 @@ export default function SettingsPage() {
                 <p className="text-xs text-muted-foreground">ប្តូរពណ៌កម្មវិធី</p>
               </div>
             </div>
-            <Switch 
-              id="dark-mode" 
-              checked={darkMode} 
-              onCheckedChange={handleThemeToggle} 
+            <Switch
+              id="dark-mode"
+              checked={settings.dark_mode}
+              onCheckedChange={handleThemeToggle}
+              disabled={loading}
             />
           </div>
-          
+
           <Separator className="ml-14" />
-          
+
           <div className="flex items-center justify-between p-4">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
@@ -123,7 +154,7 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
-      
+
       <div className="text-center pb-8 pt-4">
         <p className="text-xs text-muted-foreground">កំណែ ១.០.០</p>
       </div>
