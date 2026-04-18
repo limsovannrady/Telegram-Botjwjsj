@@ -96,11 +96,6 @@ export default function AboutPage() {
 
             <div className="flex items-center gap-4 mt-4 pt-4 border-t border-border w-full justify-center">
               <div className="text-center">
-                <p className="text-lg font-bold text-primary">E-GetS</p>
-                <p className="text-[10px] text-muted-foreground uppercase font-bold">ក្រុមហ៊ុន</p>
-              </div>
-              <div className="w-px h-8 bg-border" />
-              <div className="text-center">
                 <p className="text-lg font-bold text-accent">🇰🇭</p>
                 <p className="text-[10px] text-muted-foreground uppercase font-bold">កម្ពុជា</p>
               </div>
