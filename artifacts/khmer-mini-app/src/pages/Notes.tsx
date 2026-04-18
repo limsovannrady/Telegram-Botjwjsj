@@ -3,100 +3,80 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, X, Check, NotebookPen, Clock } from "lucide-react";
-import { getTelegramUser } from "@/lib/telegram";
 
 interface Note {
   id: number;
-  telegram_id: number;
   title: string;
   content: string;
   created_at: string;
   updated_at: string;
 }
 
-export default function NotesPage() {
-  const user = getTelegramUser();
-  const telegramId = user?.id;
+const STORAGE_KEY = "khmer_notes";
 
+function loadNotes(): Note[] {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveNotes(notes: Note[]) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+}
+
+export default function NotesPage() {
   const [notes, setNotes] = useState<Note[]>([]);
-  const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Note | null>(null);
   const [creating, setCreating] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newContent, setNewContent] = useState("");
-  const [saving, setSaving] = useState(false);
   const titleRef = useRef<HTMLInputElement>(null);
   const newTitleRef = useRef<HTMLInputElement>(null);
 
-  const fetchNotes = async () => {
-    if (!telegramId) return;
-    try {
-      const res = await fetch(`/api/users/${telegramId}/notes`);
-      const data = await res.json();
-      setNotes(data);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { fetchNotes(); }, [telegramId]);
+  useEffect(() => {
+    setNotes(loadNotes());
+  }, []);
 
   useEffect(() => {
     if (creating && newTitleRef.current) newTitleRef.current.focus();
     if (editing && titleRef.current) titleRef.current.focus();
   }, [creating, editing]);
 
-  const handleCreate = async () => {
-    if (!telegramId || (!newTitle.trim() && !newContent.trim())) return;
-    setSaving(true);
-    try {
-      const res = await fetch(`/api/users/${telegramId}/notes`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: newTitle.trim(), content: newContent.trim() }),
-      });
-      const note = await res.json();
-      setNotes([note, ...notes]);
-      setCreating(false);
-      setNewTitle("");
-      setNewContent("");
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setSaving(false);
-    }
+  const handleCreate = () => {
+    if (!newTitle.trim() && !newContent.trim()) return;
+    const now = new Date().toISOString();
+    const note: Note = {
+      id: Date.now(),
+      title: newTitle.trim(),
+      content: newContent.trim(),
+      created_at: now,
+      updated_at: now,
+    };
+    const updated = [note, ...notes];
+    setNotes(updated);
+    saveNotes(updated);
+    setCreating(false);
+    setNewTitle("");
+    setNewContent("");
   };
 
-  const handleUpdate = async () => {
-    if (!telegramId || !editing) return;
-    setSaving(true);
-    try {
-      const res = await fetch(`/api/users/${telegramId}/notes/${editing.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: editing.title, content: editing.content }),
-      });
-      const updated = await res.json();
-      setNotes(notes.map((n) => (n.id === updated.id ? updated : n)));
-      setEditing(null);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setSaving(false);
-    }
+  const handleUpdate = () => {
+    if (!editing) return;
+    const updated = notes.map((n) =>
+      n.id === editing.id ? { ...editing, updated_at: new Date().toISOString() } : n
+    );
+    setNotes(updated);
+    saveNotes(updated);
+    setEditing(null);
   };
 
-  const handleDelete = async (noteId: number) => {
-    if (!telegramId) return;
-    try {
-      await fetch(`/api/users/${telegramId}/notes/${noteId}`, { method: "DELETE" });
-      setNotes(notes.filter((n) => n.id !== noteId));
-      if (editing?.id === noteId) setEditing(null);
-    } catch (e) {
-      console.error(e);
-    }
+  const handleDelete = (noteId: number) => {
+    const updated = notes.filter((n) => n.id !== noteId);
+    setNotes(updated);
+    saveNotes(updated);
+    if (editing?.id === noteId) setEditing(null);
   };
 
   const formatDate = (iso: string) => {
@@ -161,7 +141,7 @@ export default function NotesPage() {
                   </Button>
                   <Button
                     size="sm"
-                    disabled={saving || (!newTitle.trim() && !newContent.trim())}
+                    disabled={!newTitle.trim() && !newContent.trim()}
                     onClick={handleCreate}
                   >
                     <Check className="w-4 h-4 mr-1" /> រក្សាទុក
@@ -173,15 +153,7 @@ export default function NotesPage() {
         )}
       </AnimatePresence>
 
-      {loading && (
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-20 rounded-xl bg-muted/40 animate-pulse" />
-          ))}
-        </div>
-      )}
-
-      {!loading && notes.length === 0 && !creating && (
+      {!creating && notes.length === 0 && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -233,7 +205,7 @@ export default function NotesPage() {
                       <Button size="sm" variant="ghost" onClick={() => setEditing(null)}>
                         <X className="w-4 h-4 mr-1" /> បោះបង់
                       </Button>
-                      <Button size="sm" disabled={saving} onClick={handleUpdate}>
+                      <Button size="sm" onClick={handleUpdate}>
                         <Check className="w-4 h-4 mr-1" /> រក្សាទុក
                       </Button>
                     </div>

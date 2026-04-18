@@ -1,11 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { getTelegramUser } from "@/lib/telegram";
 
 export interface UserSettings {
-  telegram_id: number;
-  first_name?: string;
-  last_name?: string;
-  username?: string;
   notifications: boolean;
   dark_mode: boolean;
   feature_payment: boolean;
@@ -16,7 +11,9 @@ export interface UserSettings {
   feature_qr: boolean;
 }
 
-const DEFAULT_SETTINGS: Omit<UserSettings, "telegram_id"> = {
+const STORAGE_KEY = "khmer_settings";
+
+const DEFAULT_SETTINGS: UserSettings = {
   notifications: true,
   dark_mode: false,
   feature_payment: true,
@@ -27,77 +24,32 @@ const DEFAULT_SETTINGS: Omit<UserSettings, "telegram_id"> = {
   feature_qr: true,
 };
 
-export function useUserSettings() {
-  const user = getTelegramUser();
-  const telegramId = user?.id;
+function loadSettings(): UserSettings {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) return DEFAULT_SETTINGS;
+    return { ...DEFAULT_SETTINGS, ...JSON.parse(stored) };
+  } catch {
+    return DEFAULT_SETTINGS;
+  }
+}
 
-  const [settings, setSettings] = useState<UserSettings>({
-    telegram_id: telegramId,
-    ...DEFAULT_SETTINGS,
-  });
+export function useUserSettings() {
+  const [settings, setSettings] = useState<UserSettings>(DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!telegramId) {
-      setLoading(false);
-      return;
-    }
-    fetch(`/api/users/${telegramId}/settings`)
-      .then((res) => res.json())
-      .then((data) => {
-        setSettings({
-          telegram_id: telegramId,
-          notifications: data.notifications ?? true,
-          dark_mode: data.dark_mode ?? false,
-          feature_payment: data.feature_payment ?? true,
-          feature_explore: data.feature_explore ?? true,
-          feature_schedule: data.feature_schedule ?? true,
-          feature_favorites: data.feature_favorites ?? true,
-          feature_notes: data.feature_notes ?? true,
-          feature_qr: data.feature_qr ?? true,
-          first_name: user?.first_name,
-          last_name: user?.last_name,
-          username: user?.username,
-        });
-      })
-      .catch(() => {
-        setSettings({
-          telegram_id: telegramId,
-          ...DEFAULT_SETTINGS,
-          first_name: user?.first_name,
-          last_name: user?.last_name,
-          username: user?.username,
-        });
-      })
-      .finally(() => setLoading(false));
-  }, [telegramId]);
+    setSettings(loadSettings());
+    setLoading(false);
+  }, []);
 
-  const updateSettings = useCallback(
-    async (updates: Partial<Omit<UserSettings, "telegram_id">>) => {
-      if (!telegramId) return;
-      setSaving(true);
-      const next = { ...settings, ...updates };
-      setSettings(next);
-      try {
-        await fetch(`/api/users/${telegramId}/settings`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ...updates,
-            first_name: user?.first_name,
-            last_name: user?.last_name,
-            username: user?.username,
-          }),
-        });
-      } catch (err) {
-        console.error("Failed to save settings", err);
-      } finally {
-        setSaving(false);
-      }
-    },
-    [telegramId, settings, user]
-  );
+  const updateSettings = useCallback((updates: Partial<UserSettings>) => {
+    setSettings((prev) => {
+      const next = { ...prev, ...updates };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
 
-  return { settings, loading, saving, updateSettings };
+  return { settings, loading, saving: false, updateSettings };
 }
