@@ -1,6 +1,6 @@
 import os
 import logging
-from telegram import Update, MenuButtonWebApp, WebAppInfo, InlineKeyboardButton, InlineKeyboardMarkup, constants
+from telegram import Update, WebAppInfo, InlineKeyboardButton, InlineKeyboardMarkup, MenuButtonDefault, constants
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
 logging.basicConfig(level=logging.INFO)
@@ -11,15 +11,10 @@ MINI_APP_URL = os.environ["MINI_APP_URL"]
 
 async def post_init(application):
     try:
-        await application.bot.set_chat_menu_button(
-            menu_button=MenuButtonWebApp(
-                text="បើក App",
-                web_app=WebAppInfo(url=MINI_APP_URL)
-            )
-        )
-        logger.info(f"Menu button set to: {MINI_APP_URL}")
+        await application.bot.set_chat_menu_button(menu_button=MenuButtonDefault())
+        logger.info("Menu button reset to default")
     except Exception as e:
-        logger.error(f"Failed to set menu button: {e}")
+        logger.error(f"Failed to reset menu button: {e}")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_chat_action(update.effective_chat.id, constants.ChatAction.TYPING)
