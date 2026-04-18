@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Bell, Moon, Languages, Shield, User, CreditCard, Compass, Calendar, Star, NotebookPen } from "lucide-react";
+import { Bell, Moon, Languages, Shield, User, CreditCard, Compass, Calendar, Star, NotebookPen, QrCode } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useUserSettings } from "@/hooks/use-user-settings";
 import { useTelegram } from "@/hooks/use-telegram";
@@ -66,6 +66,14 @@ export default function SettingsPage() {
       desc: "មុខងារសរសេរចំណាំផ្ទាល់ខ្លួន",
       color: "text-rose-500",
       bg: "bg-rose-50 dark:bg-rose-950/30",
+    },
+    {
+      key: "feature_qr" as const,
+      icon: QrCode,
+      label: "QR Code",
+      desc: "បង្កើត និងស្កេន QR Code",
+      color: "text-cyan-500",
+      bg: "bg-cyan-50 dark:bg-cyan-950/30",
     },
   ];
 

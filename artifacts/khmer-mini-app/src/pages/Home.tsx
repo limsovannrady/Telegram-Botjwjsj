@@ -5,7 +5,7 @@ import { useUserSettings } from "@/hooks/use-user-settings";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, Compass, CreditCard, Sparkles, Star, NotebookPen } from "lucide-react";
+import { Calendar, Compass, CreditCard, Sparkles, Star, NotebookPen, QrCode } from "lucide-react";
 
 export default function HomePage() {
   const { user } = useTelegram();
@@ -52,6 +52,14 @@ export default function HomePage() {
       color: "text-rose-500",
       bg: "bg-rose-50 dark:bg-rose-950/30",
       href: "/notes",
+    },
+    {
+      key: "feature_qr" as const,
+      icon: QrCode,
+      label: "QR Code",
+      color: "text-cyan-500",
+      bg: "bg-cyan-50 dark:bg-cyan-950/30",
+      href: "/qr",
     },
   ];
 

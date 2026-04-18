@@ -9,6 +9,7 @@ import { TelegramGuard } from "@/components/TelegramGuard";
 import Home from "@/pages/Home";
 import Info from "@/pages/Info";
 import Notes from "@/pages/Notes";
+import QRCodePage from "@/pages/QRCode";
 import Settings from "@/pages/Settings";
 import About from "@/pages/About";
 import NotFound from "@/pages/not-found";
@@ -21,6 +22,7 @@ function Router() {
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/notes" component={Notes} />
+        <Route path="/qr" component={QRCodePage} />
         <Route path="/info" component={Info} />
         <Route path="/settings" component={Settings} />
         <Route path="/about" component={About} />

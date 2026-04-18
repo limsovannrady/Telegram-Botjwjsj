@@ -13,6 +13,7 @@ export interface UserSettings {
   feature_schedule: boolean;
   feature_favorites: boolean;
   feature_notes: boolean;
+  feature_qr: boolean;
 }
 
 const DEFAULT_SETTINGS: Omit<UserSettings, "telegram_id"> = {
@@ -23,6 +24,7 @@ const DEFAULT_SETTINGS: Omit<UserSettings, "telegram_id"> = {
   feature_schedule: true,
   feature_favorites: true,
   feature_notes: true,
+  feature_qr: true,
 };
 
 export function useUserSettings() {
@@ -53,6 +55,7 @@ export function useUserSettings() {
           feature_schedule: data.feature_schedule ?? true,
           feature_favorites: data.feature_favorites ?? true,
           feature_notes: data.feature_notes ?? true,
+          feature_qr: data.feature_qr ?? true,
           first_name: user?.first_name,
           last_name: user?.last_name,
           username: user?.username,
