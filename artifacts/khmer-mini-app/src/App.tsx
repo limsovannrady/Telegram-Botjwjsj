@@ -29,10 +29,8 @@ function Router() {
 }
 
 function App() {
-  const botUsername = import.meta.env.VITE_BOT_USERNAME as string | undefined;
-
   return (
-    <TelegramGuard botUsername={botUsername}>
+    <TelegramGuard>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>

@@ -9,13 +9,9 @@
       "destination": "/index.html"
     }
   ],
-  "env": {
-    "BASE_PATH": "/"
-  },
   "build": {
     "env": {
-      "BASE_PATH": "/",
-      "VITE_BOT_USERNAME": "@your_bot_username"
+      "BASE_PATH": "/"
     }
   }
 }
