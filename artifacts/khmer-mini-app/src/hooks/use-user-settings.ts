@@ -8,11 +8,19 @@ export interface UserSettings {
   username?: string;
   notifications: boolean;
   dark_mode: boolean;
+  feature_payment: boolean;
+  feature_explore: boolean;
+  feature_schedule: boolean;
+  feature_favorites: boolean;
 }
 
 const DEFAULT_SETTINGS: Omit<UserSettings, "telegram_id"> = {
   notifications: true,
   dark_mode: false,
+  feature_payment: true,
+  feature_explore: true,
+  feature_schedule: true,
+  feature_favorites: true,
 };
 
 export function useUserSettings() {
@@ -38,6 +46,10 @@ export function useUserSettings() {
           telegram_id: telegramId,
           notifications: data.notifications ?? true,
           dark_mode: data.dark_mode ?? false,
+          feature_payment: data.feature_payment ?? true,
+          feature_explore: data.feature_explore ?? true,
+          feature_schedule: data.feature_schedule ?? true,
+          feature_favorites: data.feature_favorites ?? true,
           first_name: user?.first_name,
           last_name: user?.last_name,
           username: user?.username,

@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useTelegram } from "@/hooks/use-telegram";
+import { useUserSettings } from "@/hooks/use-user-settings";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -7,6 +8,42 @@ import { Calendar, Compass, CreditCard, Sparkles, Star } from "lucide-react";
 
 export default function HomePage() {
   const { user } = useTelegram();
+  const { settings, loading } = useUserSettings();
+
+  const allActions = [
+    {
+      key: "feature_payment" as const,
+      icon: CreditCard,
+      label: "បង់ប្រាក់",
+      color: "text-blue-500",
+      bg: "bg-blue-50 dark:bg-blue-950/30",
+    },
+    {
+      key: "feature_explore" as const,
+      icon: Compass,
+      label: "រុករក",
+      color: "text-emerald-500",
+      bg: "bg-emerald-50 dark:bg-emerald-950/30",
+    },
+    {
+      key: "feature_schedule" as const,
+      icon: Calendar,
+      label: "កាលវិភាគ",
+      color: "text-orange-500",
+      bg: "bg-orange-50 dark:bg-orange-950/30",
+    },
+    {
+      key: "feature_favorites" as const,
+      icon: Star,
+      label: "ពេញចិត្ត",
+      color: "text-purple-500",
+      bg: "bg-purple-50 dark:bg-purple-950/30",
+    },
+  ];
+
+  const visibleActions = loading
+    ? allActions
+    : allActions.filter((a) => settings[a.key]);
 
   return (
     <motion.div
@@ -44,27 +81,41 @@ export default function HomePage() {
             "ការតស៊ូគង់បានសម្រេច ការព្យាយាមគង់បានផល។"
           </p>
           <p className="text-xs opacity-80 mt-4 font-medium flex items-center gap-1">
-            <Star className="w-3 h-3 fill-accent text-accent" /> 
+            <Star className="w-3 h-3 fill-accent text-accent" />
             សុភាសិតខ្មែរ
           </p>
         </CardContent>
       </Card>
 
-      <div>
-        <h2 className="text-lg font-bold mb-4 font-serif">សេវាកម្មរហ័ស</h2>
-        <div className="grid grid-cols-4 gap-4">
-          <ActionBtn icon={CreditCard} label="បង់ប្រាក់" color="text-blue-500" bg="bg-blue-50 dark:bg-blue-950/30" />
-          <ActionBtn icon={Compass} label="រុករក" color="text-emerald-500" bg="bg-emerald-50 dark:bg-emerald-950/30" />
-          <ActionBtn icon={Calendar} label="កាលវិភាគ" color="text-orange-500" bg="bg-orange-50 dark:bg-orange-950/30" />
-          <ActionBtn icon={Star} label="ពេញចិត្ត" color="text-purple-500" bg="bg-purple-50 dark:bg-purple-950/30" />
+      {visibleActions.length > 0 && (
+        <div>
+          <h2 className="text-lg font-bold mb-4 font-serif">សេវាកម្មរហ័ស</h2>
+          <div className={`grid gap-4 ${visibleActions.length <= 2 ? "grid-cols-2" : visibleActions.length === 3 ? "grid-cols-3" : "grid-cols-4"}`}>
+            {visibleActions.map((a) => (
+              <ActionBtn
+                key={a.key}
+                icon={a.icon}
+                label={a.label}
+                color={a.color}
+                bg={a.bg}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
+
+      {!loading && visibleActions.length === 0 && (
+        <div className="text-center py-6 text-sm text-muted-foreground">
+          <p>មិនមានមុខងារណាត្រូវបានបើក</p>
+          <p className="text-xs mt-1">ទៅ ការកំណត់ ដើម្បីបើកមុខងារ</p>
+        </div>
+      )}
 
       <div className="pt-2">
         <h2 className="text-lg font-bold mb-4 font-serif">ព័ត៌មានថ្មីៗ</h2>
         <div className="space-y-3">
           {[1, 2].map((i) => (
-            <Card key={i} className="border border-border/50 shadow-sm overflow-hidden hover-elevate cursor-pointer">
+            <Card key={i} className="border border-border/50 shadow-sm overflow-hidden cursor-pointer">
               <CardContent className="p-0 flex">
                 <div className="w-24 h-24 bg-muted/50 flex-shrink-0 flex items-center justify-center">
                   <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center">
@@ -86,7 +137,7 @@ export default function HomePage() {
   );
 }
 
-function ActionBtn({ icon: Icon, label, color, bg }: { icon: any, label: string, color: string, bg: string }) {
+function ActionBtn({ icon: Icon, label, color, bg }: { icon: any; label: string; color: string; bg: string }) {
   return (
     <div className="flex flex-col items-center gap-2">
       <button className={`w-14 h-14 rounded-2xl ${bg} flex items-center justify-center transition-transform active:scale-95 shadow-sm`}>
