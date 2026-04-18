@@ -71,9 +71,12 @@ export default function QRCodePage() {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-async function svgToPngBase64(svgEl: SVGElement, size = 280): Promise<string> {
+async function svgToPngBase64(svgEl: SVGElement, size = 1024): Promise<string> {
   const serializer = new XMLSerializer();
-  const svgStr = serializer.serializeToString(svgEl);
+  const clone = svgEl.cloneNode(true) as SVGElement;
+  clone.setAttribute("width", size.toString());
+  clone.setAttribute("height", size.toString());
+  const svgStr = serializer.serializeToString(clone);
   const svgBlob = new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
   const url = URL.createObjectURL(svgBlob);
 
@@ -84,11 +87,12 @@ async function svgToPngBase64(svgEl: SVGElement, size = 280): Promise<string> {
       canvas.width = size;
       canvas.height = size;
       const ctx = canvas.getContext("2d")!;
+      ctx.imageSmoothingEnabled = false;
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, size, size);
       ctx.drawImage(img, 0, 0, size, size);
       URL.revokeObjectURL(url);
-      resolve(canvas.toDataURL("image/png"));
+      resolve(canvas.toDataURL("image/png", 1.0));
     };
     img.onerror = () => { URL.revokeObjectURL(url); reject(); };
     img.src = url;

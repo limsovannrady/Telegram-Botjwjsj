@@ -25,7 +25,7 @@ export default async function handler(req, res) {
     const form = new FormData();
     form.append("chat_id", telegramId.toString());
     form.append(
-      "photo",
+      "document",
       new Blob([buffer], { type: "image/png" }),
       "qrcode.png"
     );
@@ -34,7 +34,7 @@ export default async function handler(req, res) {
     }
 
     const response = await fetch(
-      `https://api.telegram.org/bot${botToken}/sendPhoto`,
+      `https://api.telegram.org/bot${botToken}/sendDocument`,
       { method: "POST", body: form }
     );
     const data = await response.json();
