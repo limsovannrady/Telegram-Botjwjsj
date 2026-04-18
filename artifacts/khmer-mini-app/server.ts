@@ -157,6 +157,41 @@ app.delete("/api/users/:telegramId/notes/:noteId", async (req, res) => {
   }
 });
 
+// ── Send QR to Telegram ──────────────────────────────────────────────────────
+
+app.post("/api/users/:telegramId/send-qr", async (req, res) => {
+  const telegramId = parseInt(req.params.telegramId);
+  if (isNaN(telegramId)) return res.status(400).json({ error: "Invalid telegram_id" });
+
+  const { imageBase64, text } = req.body;
+  const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  if (!botToken) return res.status(500).json({ error: "Bot token not configured" });
+  if (!imageBase64) return res.status(400).json({ error: "imageBase64 required" });
+
+  try {
+    const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, "");
+    const buffer = Buffer.from(base64Data, "base64");
+
+    const form = new FormData();
+    form.append("chat_id", telegramId.toString());
+    form.append("photo", new Blob([buffer], { type: "image/png" }), "qrcode.png");
+    if (text) {
+      form.append("caption", `🔳 QR Code\n\n${text}`);
+    }
+
+    const response = await fetch(
+      `https://api.telegram.org/bot${botToken}/sendPhoto`,
+      { method: "POST", body: form }
+    );
+    const data = await response.json() as any;
+    if (!data.ok) return res.status(500).json({ error: data.description });
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Failed to send to Telegram" });
+  }
+});
+
 const API_PORT = 4001;
 app.listen(API_PORT, () => {
   console.log(`API server running on port ${API_PORT}`);

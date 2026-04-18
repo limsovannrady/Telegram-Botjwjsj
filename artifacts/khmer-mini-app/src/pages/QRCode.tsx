@@ -3,16 +3,22 @@ import { motion } from "framer-motion";
 import { useLocation } from "wouter";
 import { QRCodeSVG } from "qrcode.react";
 import { Html5Qrcode } from "html5-qrcode";
-import { ArrowLeft, QrCode, ScanLine, Download, Copy, Check, Camera, ImageUp, X } from "lucide-react";
+import {
+  ArrowLeft, QrCode, ScanLine, Download, Copy, Check,
+  Camera, ImageUp, X, Send, Loader2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { useTelegram } from "@/hooks/use-telegram";
 
 type Tab = "generate" | "scan";
 
 export default function QRCodePage() {
   const [, navigate] = useLocation();
   const [tab, setTab] = useState<Tab>("generate");
+  const { user } = useTelegram();
+  const telegramId = user?.id;
 
   return (
     <motion.div
@@ -56,19 +62,53 @@ export default function QRCodePage() {
         </button>
       </div>
 
-      {tab === "generate" ? <GenerateTab /> : <ScanTab />}
+      {tab === "generate"
+        ? <GenerateTab telegramId={telegramId} />
+        : <ScanTab />}
     </motion.div>
   );
 }
 
-function GenerateTab() {
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+async function svgToPngBase64(svgEl: SVGElement, size = 280): Promise<string> {
+  const serializer = new XMLSerializer();
+  const svgStr = serializer.serializeToString(svgEl);
+  const svgBlob = new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" });
+  const url = URL.createObjectURL(svgBlob);
+
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext("2d")!;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, size, size);
+      ctx.drawImage(img, 0, 0, size, size);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL("image/png"));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(); };
+    img.src = url;
+  });
+}
+
+// ── Generate Tab ─────────────────────────────────────────────────────────────
+
+function GenerateTab({ telegramId }: { telegramId?: number }) {
   const [text, setText] = useState("");
   const [generated, setGenerated] = useState("");
   const [copied, setCopied] = useState(false);
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "sent" | "error">("idle");
   const svgRef = useRef<HTMLDivElement>(null);
 
   const handleGenerate = () => {
-    if (text.trim()) setGenerated(text.trim());
+    if (text.trim()) {
+      setGenerated(text.trim());
+      setSaveState("idle");
+    }
   };
 
   const handleCopy = async () => {
@@ -78,18 +118,37 @@ function GenerateTab() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleDownload = () => {
+  const handleSave = async () => {
     const svg = svgRef.current?.querySelector("svg");
-    if (!svg) return;
-    const serializer = new XMLSerializer();
-    const svgStr = serializer.serializeToString(svg);
-    const blob = new Blob([svgStr], { type: "image/svg+xml" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "qrcode.svg";
-    a.click();
-    URL.revokeObjectURL(url);
+    if (!svg || !generated) return;
+
+    setSaveState("saving");
+    try {
+      const pngBase64 = await svgToPngBase64(svg as SVGElement);
+
+      // 1. Download PNG locally
+      const a = document.createElement("a");
+      a.href = pngBase64;
+      a.download = "qrcode.png";
+      a.click();
+
+      // 2. Send to Telegram if we have the telegramId
+      if (telegramId) {
+        const res = await fetch(`/api/users/${telegramId}/send-qr`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ imageBase64: pngBase64, text: generated }),
+        });
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error);
+      }
+
+      setSaveState("sent");
+      setTimeout(() => setSaveState("idle"), 3000);
+    } catch {
+      setSaveState("error");
+      setTimeout(() => setSaveState("idle"), 3000);
+    }
   };
 
   return (
@@ -104,11 +163,7 @@ function GenerateTab() {
             rows={3}
             className="resize-none text-sm"
           />
-          <Button
-            className="w-full"
-            onClick={handleGenerate}
-            disabled={!text.trim()}
-          >
+          <Button className="w-full" onClick={handleGenerate} disabled={!text.trim()}>
             <QrCode className="w-4 h-4 mr-2" />
             បង្កើត QR Code
           </Button>
@@ -118,36 +173,57 @@ function GenerateTab() {
       {generated && (
         <Card className="border-border">
           <CardContent className="p-6 flex flex-col items-center gap-4">
-            <div
-              ref={svgRef}
-              className="p-4 bg-white rounded-2xl shadow-sm"
-            >
-              <QRCodeSVG
-                value={generated}
-                size={200}
-                level="H"
-                includeMargin={false}
-              />
+            <div ref={svgRef} className="p-4 bg-white rounded-2xl shadow-sm">
+              <QRCodeSVG value={generated} size={200} level="H" includeMargin={false} />
             </div>
             <p className="text-xs text-center text-muted-foreground break-all max-w-xs line-clamp-2">
               {generated}
             </p>
+
+            {/* Save status feedback */}
+            {saveState === "sent" && (
+              <div className="flex items-center gap-2 text-green-500 text-sm font-medium">
+                <Check className="w-4 h-4" />
+                ទាញយក &amp; ផ្ញើទៅ Telegram ជោគជ័យ!
+              </div>
+            )}
+            {saveState === "error" && (
+              <p className="text-xs text-red-500">មានបញ្ហា សូមព្យាយាមម្តងទៀត</p>
+            )}
+
             <div className="flex gap-2 w-full">
               <Button variant="outline" className="flex-1" onClick={handleCopy}>
-                {copied ? <Check className="w-4 h-4 mr-2 text-green-500" /> : <Copy className="w-4 h-4 mr-2" />}
-                {copied ? "បានចម្លង!" : "ចម្លង Text"}
+                {copied
+                  ? <><Check className="w-4 h-4 mr-2 text-green-500" />បានចម្លង!</>
+                  : <><Copy className="w-4 h-4 mr-2" />ចម្លង Text</>}
               </Button>
-              <Button variant="outline" className="flex-1" onClick={handleDownload}>
-                <Download className="w-4 h-4 mr-2" />
-                រក្សាទុក
+              <Button
+                className="flex-1"
+                onClick={handleSave}
+                disabled={saveState === "saving"}
+              >
+                {saveState === "saving" ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" />កំពុងផ្ញើ...</>
+                ) : (
+                  <><Download className="w-4 h-4 mr-2" />រក្សាទុក</>
+                )}
               </Button>
             </div>
+
+            {telegramId && saveState === "idle" && (
+              <p className="text-[10px] text-muted-foreground text-center flex items-center gap-1">
+                <Send className="w-3 h-3" />
+                នឹងផ្ញើ QR ទៅ Telegram ស្វ័យប្រវត្តិ
+              </p>
+            )}
           </CardContent>
         </Card>
       )}
     </div>
   );
 }
+
+// ── Scan Tab ──────────────────────────────────────────────────────────────────
 
 function ScanTab() {
   const [mode, setMode] = useState<"idle" | "camera" | "result">("idle");
@@ -182,7 +258,7 @@ function ScanTab() {
         },
         undefined
       );
-    } catch (e: any) {
+    } catch {
       setError("មិនអាចប្រើ Camera បានទេ។ សូមអនុញ្ញាត Camera ក្នុង Telegram Settings។");
       setMode("idle");
     }
@@ -201,7 +277,7 @@ function ScanTab() {
         setMode("result");
       })
       .catch(() => {
-        setError("មិនអាចអានQR Code ក្នុងរូបភាពនេះបានទេ។");
+        setError("មិនអាចអាន QR Code ក្នុងរូបភាពនេះបានទេ។");
       });
   };
 
@@ -216,6 +292,7 @@ function ScanTab() {
     setResult("");
     setError("");
     setMode("idle");
+    if (fileRef.current) fileRef.current.value = "";
   };
 
   useEffect(() => {
@@ -238,16 +315,8 @@ function ScanTab() {
               <ImageUp className="w-4 h-4 mr-2" />
               ជ្រើសរូបភាព QR
             </Button>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleFile}
-            />
-            {error && (
-              <p className="text-xs text-red-500 text-center mt-2">{error}</p>
-            )}
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+            {error && <p className="text-xs text-red-500 text-center mt-2">{error}</p>}
           </CardContent>
         </Card>
       )}
@@ -277,17 +346,15 @@ function ScanTab() {
               <p className="text-sm break-all">{result}</p>
             </div>
             {result.startsWith("http") && (
-              <Button
-                className="w-full"
-                onClick={() => window.open(result, "_blank")}
-              >
+              <Button className="w-full" onClick={() => window.open(result, "_blank")}>
                 បើក Link
               </Button>
             )}
             <div className="flex gap-2">
               <Button variant="outline" className="flex-1" onClick={handleCopy}>
-                {copied ? <Check className="w-4 h-4 mr-2 text-green-500" /> : <Copy className="w-4 h-4 mr-2" />}
-                {copied ? "បានចម្លង!" : "ចម្លង"}
+                {copied
+                  ? <><Check className="w-4 h-4 mr-2 text-green-500" />បានចម្លង!</>
+                  : <><Copy className="w-4 h-4 mr-2" />ចម្លង</>}
               </Button>
               <Button variant="outline" className="flex-1" onClick={reset}>
                 <ScanLine className="w-4 h-4 mr-2" />
