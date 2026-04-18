@@ -29,9 +29,6 @@ export default async function handler(req, res) {
       new Blob([buffer], { type: "image/png" }),
       "qrcode.png"
     );
-    if (text) {
-      form.append("caption", `🔳 QR Code\n\n${text}`);
-    }
 
     const response = await fetch(
       `https://api.telegram.org/bot${botToken}/sendDocument`,

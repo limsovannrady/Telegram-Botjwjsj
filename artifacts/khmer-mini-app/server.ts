@@ -175,9 +175,6 @@ app.post("/api/users/:telegramId/send-qr", async (req, res) => {
     const form = new FormData();
     form.append("chat_id", telegramId.toString());
     form.append("document", new Blob([buffer], { type: "image/png" }), "qrcode.png");
-    if (text) {
-      form.append("caption", `🔳 QR Code\n\n${text}`);
-    }
 
     const response = await fetch(
       `https://api.telegram.org/bot${botToken}/sendDocument`,
