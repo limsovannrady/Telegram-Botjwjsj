@@ -2,6 +2,10 @@
   "name": "khmer-mini-app-root",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
     "pg": "^8.11.3"
   }
