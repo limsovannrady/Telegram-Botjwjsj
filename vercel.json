@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "buildCommand": "cd artifacts/khmer-mini-app && npm install -g pnpm && pnpm install && node_modules/.bin/vite build --config vite.config.ts",
+  "outputDirectory": "artifacts/khmer-mini-app/dist/public",
+  "rewrites": [
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "env": {
+    "BASE_PATH": "/"
+  }
+}

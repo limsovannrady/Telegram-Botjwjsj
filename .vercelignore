@@ -1,0 +1,6 @@
+artifacts/khmer-mini-app/node_modules
+artifacts/khmer-mini-app/dist
+__pycache__
+*.pyc
+.pythonlibs
+uv.lock
