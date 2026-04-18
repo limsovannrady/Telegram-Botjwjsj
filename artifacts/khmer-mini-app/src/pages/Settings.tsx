@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Bell, Moon, Languages, Shield, User, CreditCard, Compass, Calendar, Star } from "lucide-react";
+import { Bell, Moon, Languages, Shield, User, CreditCard, Compass, Calendar, Star, NotebookPen } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useUserSettings } from "@/hooks/use-user-settings";
 import { useTelegram } from "@/hooks/use-telegram";
@@ -58,6 +58,14 @@ export default function SettingsPage() {
       desc: "មុខងាររក្សាទុកចំណូលចិត្ត",
       color: "text-purple-500",
       bg: "bg-purple-50 dark:bg-purple-950/30",
+    },
+    {
+      key: "feature_notes" as const,
+      icon: NotebookPen,
+      label: "កំណត់ចំណាំ",
+      desc: "មុខងារសរសេរចំណាំផ្ទាល់ខ្លួន",
+      color: "text-rose-500",
+      bg: "bg-rose-50 dark:bg-rose-950/30",
     },
   ];
 

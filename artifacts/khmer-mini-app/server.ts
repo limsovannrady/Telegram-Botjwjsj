@@ -34,6 +34,7 @@ app.get("/api/users/:telegramId/settings", async (req, res) => {
         feature_explore: true,
         feature_schedule: true,
         feature_favorites: true,
+        feature_notes: true,
       });
     }
     return res.json(result.rows[0]);
@@ -48,14 +49,14 @@ app.post("/api/users/:telegramId/settings", async (req, res) => {
   if (isNaN(telegramId)) return res.status(400).json({ error: "Invalid telegram_id" });
   const {
     notifications, dark_mode, first_name, last_name, username,
-    feature_payment, feature_explore, feature_schedule, feature_favorites,
+    feature_payment, feature_explore, feature_schedule, feature_favorites, feature_notes,
   } = req.body;
   try {
     await pool.query(
       `INSERT INTO user_settings
          (telegram_id, first_name, last_name, username, notifications, dark_mode,
-          feature_payment, feature_explore, feature_schedule, feature_favorites, updated_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,NOW())
+          feature_payment, feature_explore, feature_schedule, feature_favorites, feature_notes, updated_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,NOW())
        ON CONFLICT (telegram_id) DO UPDATE SET
          first_name        = COALESCE($2,  user_settings.first_name),
          last_name         = COALESCE($3,  user_settings.last_name),
@@ -66,6 +67,7 @@ app.post("/api/users/:telegramId/settings", async (req, res) => {
          feature_explore   = COALESCE($8,  user_settings.feature_explore),
          feature_schedule  = COALESCE($9,  user_settings.feature_schedule),
          feature_favorites = COALESCE($10, user_settings.feature_favorites),
+         feature_notes     = COALESCE($11, user_settings.feature_notes),
          updated_at        = NOW()`,
       [
         telegramId,
@@ -73,6 +75,7 @@ app.post("/api/users/:telegramId/settings", async (req, res) => {
         notifications ?? null, dark_mode ?? null,
         feature_payment ?? null, feature_explore ?? null,
         feature_schedule ?? null, feature_favorites ?? null,
+        feature_notes ?? null,
       ]
     );
     const result = await pool.query("SELECT * FROM user_settings WHERE telegram_id = $1", [telegramId]);

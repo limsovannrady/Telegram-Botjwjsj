@@ -1,14 +1,16 @@
 import { motion } from "framer-motion";
+import { useLocation } from "wouter";
 import { useTelegram } from "@/hooks/use-telegram";
 import { useUserSettings } from "@/hooks/use-user-settings";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, Compass, CreditCard, Sparkles, Star } from "lucide-react";
+import { Calendar, Compass, CreditCard, Sparkles, Star, NotebookPen } from "lucide-react";
 
 export default function HomePage() {
   const { user } = useTelegram();
   const { settings, loading } = useUserSettings();
+  const [, navigate] = useLocation();
 
   const allActions = [
     {
@@ -17,6 +19,7 @@ export default function HomePage() {
       label: "បង់ប្រាក់",
       color: "text-blue-500",
       bg: "bg-blue-50 dark:bg-blue-950/30",
+      href: null,
     },
     {
       key: "feature_explore" as const,
@@ -24,6 +27,7 @@ export default function HomePage() {
       label: "រុករក",
       color: "text-emerald-500",
       bg: "bg-emerald-50 dark:bg-emerald-950/30",
+      href: null,
     },
     {
       key: "feature_schedule" as const,
@@ -31,6 +35,7 @@ export default function HomePage() {
       label: "កាលវិភាគ",
       color: "text-orange-500",
       bg: "bg-orange-50 dark:bg-orange-950/30",
+      href: null,
     },
     {
       key: "feature_favorites" as const,
@@ -38,12 +43,30 @@ export default function HomePage() {
       label: "ពេញចិត្ត",
       color: "text-purple-500",
       bg: "bg-purple-50 dark:bg-purple-950/30",
+      href: null,
+    },
+    {
+      key: "feature_notes" as const,
+      icon: NotebookPen,
+      label: "កំណត់ចំណាំ",
+      color: "text-rose-500",
+      bg: "bg-rose-50 dark:bg-rose-950/30",
+      href: "/notes",
     },
   ];
 
   const visibleActions = loading
     ? allActions
     : allActions.filter((a) => settings[a.key]);
+
+  const cols =
+    visibleActions.length <= 2
+      ? "grid-cols-2"
+      : visibleActions.length === 3
+      ? "grid-cols-3"
+      : visibleActions.length === 5
+      ? "grid-cols-5"
+      : "grid-cols-4";
 
   return (
     <motion.div
@@ -73,8 +96,8 @@ export default function HomePage() {
       </div>
 
       <Card className="bg-gradient-to-br from-primary to-primary/80 border-none shadow-lg shadow-primary/20 overflow-hidden relative">
-        <div className="absolute -right-10 -top-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
-        <div className="absolute -left-10 -bottom-10 w-24 h-24 bg-accent/20 rounded-full blur-xl"></div>
+        <div className="absolute -right-10 -top-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+        <div className="absolute -left-10 -bottom-10 w-24 h-24 bg-accent/20 rounded-full blur-xl" />
         <CardContent className="p-6 relative z-10 text-primary-foreground">
           <QuoteIcon className="w-8 h-8 opacity-40 mb-2" />
           <p className="text-lg font-serif leading-relaxed font-bold tracking-wide">
@@ -90,7 +113,7 @@ export default function HomePage() {
       {visibleActions.length > 0 && (
         <div>
           <h2 className="text-lg font-bold mb-4 font-serif">សេវាកម្មរហ័ស</h2>
-          <div className={`grid gap-4 ${visibleActions.length <= 2 ? "grid-cols-2" : visibleActions.length === 3 ? "grid-cols-3" : "grid-cols-4"}`}>
+          <div className={`grid gap-3 ${cols}`}>
             {visibleActions.map((a) => (
               <ActionBtn
                 key={a.key}
@@ -98,6 +121,7 @@ export default function HomePage() {
                 label={a.label}
                 color={a.color}
                 bg={a.bg}
+                onClick={a.href ? () => navigate(a.href!) : undefined}
               />
             ))}
           </div>
@@ -137,13 +161,28 @@ export default function HomePage() {
   );
 }
 
-function ActionBtn({ icon: Icon, label, color, bg }: { icon: any; label: string; color: string; bg: string }) {
+function ActionBtn({
+  icon: Icon,
+  label,
+  color,
+  bg,
+  onClick,
+}: {
+  icon: any;
+  label: string;
+  color: string;
+  bg: string;
+  onClick?: () => void;
+}) {
   return (
     <div className="flex flex-col items-center gap-2">
-      <button className={`w-14 h-14 rounded-2xl ${bg} flex items-center justify-center transition-transform active:scale-95 shadow-sm`}>
+      <button
+        className={`w-14 h-14 rounded-2xl ${bg} flex items-center justify-center transition-transform active:scale-95 shadow-sm`}
+        onClick={onClick}
+      >
         <Icon className={`w-6 h-6 ${color}`} />
       </button>
-      <span className="text-[11px] font-medium text-center">{label}</span>
+      <span className="text-[10px] font-medium text-center leading-tight">{label}</span>
     </div>
   );
 }
