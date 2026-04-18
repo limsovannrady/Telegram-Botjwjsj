@@ -135,28 +135,6 @@ export default function HomePage() {
         </div>
       )}
 
-      <div className="pt-2">
-        <h2 className="text-lg font-bold mb-4 font-serif">ព័ត៌មានថ្មីៗ</h2>
-        <div className="space-y-3">
-          {[1, 2].map((i) => (
-            <Card key={i} className="border border-border/50 shadow-sm overflow-hidden cursor-pointer">
-              <CardContent className="p-0 flex">
-                <div className="w-24 h-24 bg-muted/50 flex-shrink-0 flex items-center justify-center">
-                  <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center">
-                    <Sparkles className="w-5 h-5 text-primary" />
-                  </div>
-                </div>
-                <div className="p-3 flex flex-col justify-center">
-                  <h3 className="font-bold text-sm mb-1">អាប់ដេតកម្មវិធីថ្មី</h3>
-                  <p className="text-xs text-muted-foreground line-clamp-2">
-                    ស្វែងរកមុខងារថ្មីៗដែលទើបតែបន្ថែមក្នុងជំនាន់ទី ១.០ នេះ។
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
     </motion.div>
   );
 }
