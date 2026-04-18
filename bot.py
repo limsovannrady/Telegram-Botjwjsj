@@ -7,7 +7,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
-MINI_APP_URL = os.environ.get("MINI_APP_URL", "https://7f89a96b-9420-4cd9-bfb1-7753e4017f40-00-baq1odzpbkns.sisko.replit.dev/")
+MINI_APP_URL = os.environ["MINI_APP_URL"]
 
 async def post_init(application):
     try:

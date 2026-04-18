@@ -45,12 +45,12 @@ args = "python3 bot.py"
 name = "Khmer Mini App API"
 author = "agent"
 
+[workflows.workflow.metadata]
+outputType = "console"
+
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "sh -c 'cd /home/runner/workspace/artifacts/khmer-mini-app && node_modules/.bin/tsx server.ts'"
-
-[workflows.workflow.metadata]
-outputType = "console"
 
 [agent]
 stack = "PNPM_WORKSPACE"
