@@ -5,3 +5,4 @@ __pycache__
 .pythonlibs
 uv.lock
 bot.py
+pyproject.toml
