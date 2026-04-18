@@ -8,6 +8,7 @@ import { AnimatePresence } from "framer-motion";
 import { TelegramGuard } from "@/components/TelegramGuard";
 import Home from "@/pages/Home";
 import Info from "@/pages/Info";
+import Notes from "@/pages/Notes";
 import Settings from "@/pages/Settings";
 import About from "@/pages/About";
 import NotFound from "@/pages/not-found";
@@ -19,6 +20,7 @@ function Router() {
     <AnimatePresence mode="wait">
       <Switch>
         <Route path="/" component={Home} />
+        <Route path="/notes" component={Notes} />
         <Route path="/info" component={Info} />
         <Route path="/settings" component={Settings} />
         <Route path="/about" component={About} />
