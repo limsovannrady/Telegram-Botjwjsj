@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "ខ្មែរ Mini App"
+version = "1.0.0"
+id = "artifacts/khmer-mini-app"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23894
+
+[services.development]
+run = "sh -c 'cd /home/runner/workspace/artifacts/khmer-mini-app && node_modules/.bin/vite --config vite.config.ts --host 0.0.0.0'"
+
+[services.production]
+build = [ "sh", "-c", "cd /home/runner/workspace/artifacts/khmer-mini-app && node_modules/.bin/vite build --config vite.config.ts" ]
+publicDir = "artifacts/khmer-mini-app/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23894"
+BASE_PATH = "/"
