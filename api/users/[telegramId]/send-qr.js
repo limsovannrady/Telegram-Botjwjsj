@@ -27,7 +27,7 @@ export default async function handler(req, res) {
     form.append(
       "document",
       new Blob([buffer], { type: "image/png" }),
-      "qrcode.png"
+      "limsovannrady_bot.png"
     );
 
     const response = await fetch(

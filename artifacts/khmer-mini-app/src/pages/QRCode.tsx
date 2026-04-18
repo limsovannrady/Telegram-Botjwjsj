@@ -133,7 +133,7 @@ function GenerateTab({ telegramId }: { telegramId?: number }) {
       // 1. Download PNG locally
       const a = document.createElement("a");
       a.href = pngBase64;
-      a.download = "qrcode.png";
+      a.download = "limsovannrady_bot.png";
       a.click();
 
       // 2. Send to Telegram if we have the telegramId
