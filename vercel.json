@@ -11,5 +11,11 @@
   ],
   "env": {
     "BASE_PATH": "/"
+  },
+  "build": {
+    "env": {
+      "BASE_PATH": "/",
+      "VITE_BOT_USERNAME": "@your_bot_username"
+    }
   }
 }
