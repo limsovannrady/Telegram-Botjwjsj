@@ -1,12 +1,11 @@
 import { Link, useLocation } from "wouter";
-import { Home, Info, Settings, User, NotebookPen } from "lucide-react";
+import { Home, Info, Settings, User } from "lucide-react";
 
 export function BottomNav() {
   const [location] = useLocation();
 
   const navItems = [
     { href: "/", label: "ទំព័រដើម", icon: Home },
-    { href: "/notes", label: "កំណត់ចំណាំ", icon: NotebookPen },
     { href: "/info", label: "ព័ត៌មាន", icon: Info },
     { href: "/settings", label: "ការកំណត់", icon: Settings },
     { href: "/about", label: "យើង", icon: User },
